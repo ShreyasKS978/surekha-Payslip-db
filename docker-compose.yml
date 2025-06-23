@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-payslip-surekha
+    ports:
+      - "6577:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: payslip_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  backend-payslip-surekha:
+    build: ./Backend
+    container_name: backend-payslip-surekha
+    ports:
+      - "3017:3017"
+    depends_on:
+      - postgres
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: admin123
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: payslip_db
+      PORT: 3017
+    restart: unless-stopped
+
+  employee-payslip-surekha:
+    build: ./Employee-Side
+    container_name: employee-payslip-surekha
+    ports:
+      - "8088:80"
+    depends_on:
+      - backend-payslip-surekha
+    restart: unless-stopped
+
+  hr-payslip-surekha:
+    build: ./HR-Side
+    container_name: hr-payslip-surekha
+    ports:
+      - "8089:80"
+    depends_on:
+      - backend-payslip-surekha
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+
